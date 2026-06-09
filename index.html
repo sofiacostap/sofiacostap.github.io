@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sofia Acosta — Computer Vision</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white:    #FFFFFF;
+      --paper:    #F7F6F2;
+      --ink:      #1A1A1A;
+      --mid:      #6B6860;
+      --rule:     #E2E0D9;
+      --accent:   #2D5BE3;   /* clear blue — the one bold note */
+      --tag-bg:   #EEF2FD;
+      --tag-fg:   #1D3FA8;
+      --serif:    'DM Serif Display', Georgia, serif;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --mono:     'DM Mono', 'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--white);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--rule);
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(1.5rem, 5vw, 4rem);
+      height: 58px;
+    }
+    .nav-name {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+      color: var(--ink);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--mid);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── LAYOUT ──────────────────────────────────────── */
+    section {
+      padding: 6rem clamp(1.5rem, 8vw, 10rem);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    section + section { padding-top: 0; }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.4rem;
+    }
+
+    h2 {
+      font-family: var(--serif);
+      font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+      font-weight: 400;
+      line-height: 1.15;
+      margin-bottom: 2.2rem;
+    }
+
+    /* ── HERO ────────────────────────────────────────── */
+    #hero {
+      padding-top: calc(58px + 5rem);
+      padding-bottom: 5rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 3rem;
+      align-items: end;
+      border-bottom: 1px solid var(--rule);
+    }
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.2rem;
+    }
+    .hero-name {
+      font-family: var(--serif);
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      font-weight: 400;
+      line-height: 1.05;
+      margin-bottom: 1.4rem;
+      color: var(--ink);
+    }
+    .hero-name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--mid);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+    .hero-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.6rem 1.3rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.18s;
+      letter-spacing: 0.02em;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: var(--white);
+      border: 1.5px solid var(--accent);
+    }
+    .btn-primary:hover { background: #1D3FA8; border-color: #1D3FA8; }
+    .btn-outline {
+      background: transparent;
+      color: var(--ink);
+      border: 1.5px solid var(--rule);
+    }
+    .btn-outline:hover { border-color: var(--ink); }
+
+    .hero-meta {
+      text-align: right;
+      padding-bottom: 0.5rem;
+    }
+    .hero-stat {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--mid);
+      letter-spacing: 0.08em;
+      line-height: 2;
+    }
+    .hero-stat strong {
+      font-size: 1.5rem;
+      font-family: var(--serif);
+      font-weight: 400;
+      color: var(--ink);
+      display: block;
+      line-height: 1.1;
+    }
+
+    /* ── ABOUT ───────────────────────────────────────── */
+    #about { border-bottom: 1px solid var(--rule); }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem 4rem;
+    }
+    .about-text p {
+      color: var(--mid);
+      margin-bottom: 1rem;
+      line-height: 1.75;
+    }
+    .about-text p strong { color: var(--ink); font-weight: 500; }
+
+    .about-facts { }
+    .fact-group { margin-bottom: 2rem; }
+    .fact-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+    .fact-item {
+      font-size: 0.9rem;
+      color: var(--ink);
+      line-height: 1.8;
+      padding-left: 0.9rem;
+      border-left: 2px solid var(--rule);
+    }
+
+    /* ── PROJECTS ────────────────────────────────────── */
+    #projects { border-bottom: 1px solid var(--rule); }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5px;
+      border: 1.5px solid var(--rule);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .project-card {
+      background: var(--white);
+      padding: 2rem 1.8rem;
+      border-right: 1.5px solid var(--rule);
+      border-bottom: 1.5px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      transition: background 0.18s;
+    }
+    .project-card:hover { background: var(--paper); }
+    .project-card:nth-child(2n) { border-right: none; }
+
+    .project-number {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+    }
+    .project-title {
+      font-family: var(--serif);
+      font-size: 1.2rem;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .project-desc {
+      font-size: 0.875rem;
+      color: var(--mid);
+      line-height: 1.65;
+      flex: 1;
+    }
+    .project-result {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: var(--tag-bg);
+      border-radius: 3px;
+      padding: 0.25rem 0.55rem;
+      display: inline-block;
+      letter-spacing: 0.03em;
+    }
+    .project-tags {
+      display: flex; flex-wrap: wrap; gap: 0.4rem;
+      margin-top: 0.3rem;
+    }
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.67rem;
+      color: var(--tag-fg);
+      background: var(--tag-bg);
+      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      letter-spacing: 0.03em;
+    }
+    .tag.gray { color: var(--mid); background: var(--paper); }
+
+    .project-arrow {
+      font-size: 0.8rem;
+      color: var(--rule);
+      align-self: flex-end;
+      transition: color 0.18s, transform 0.18s;
+    }
+    .project-card:hover .project-arrow {
+      color: var(--accent);
+      transform: translate(2px, -2px);
+    }
+
+    /* ── EDUCATION ───────────────────────────────────── */
+    #education { border-bottom: 1px solid var(--rule); }
+    .edu-list { display: flex; flex-direction: column; gap: 0; }
+    .edu-item {
+      display: grid;
+      grid-template-columns: 6rem 1fr;
+      gap: 0 2.5rem;
+      padding: 1.6rem 0;
+      border-bottom: 1px solid var(--rule);
+      align-items: start;
+    }
+    .edu-item:last-child { border-bottom: none; }
+    .edu-dates {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--mid);
+      letter-spacing: 0.06em;
+      padding-top: 0.2rem;
+      line-height: 1.6;
+    }
+    .edu-degree {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 400;
+      margin-bottom: 0.2rem;
+    }
+    .edu-school {
+      font-size: 0.875rem;
+      color: var(--mid);
+      margin-bottom: 0.5rem;
+    }
+    .edu-detail {
+      font-size: 0.82rem;
+      color: var(--mid);
+      font-style: italic;
+    }
+
+    /* ── SKILLS ──────────────────────────────────────── */
+    #skills { border-bottom: 1px solid var(--rule); }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 2rem;
+    }
+    .skill-group { }
+    .skill-group-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+    }
+    .skill-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .skill-list li {
+      font-size: 0.875rem;
+      color: var(--ink);
+      padding-left: 0.8rem;
+      position: relative;
+    }
+    .skill-list li::before {
+      content: '—';
+      position: absolute; left: 0;
+      color: var(--rule);
+      font-size: 0.75rem;
+    }
+
+    /* ── CONTACT ─────────────────────────────────────── */
+    #contact {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    #contact h2 { margin-bottom: 0.8rem; }
+    #contact .subtitle {
+      color: var(--mid);
+      margin-bottom: 2rem;
+      max-width: 480px;
+    }
+    .contact-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 1.8rem clamp(1.5rem, 8vw, 10rem);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--mid);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 700px) {
+      #hero { grid-template-columns: 1fr; }
+      .hero-meta { text-align: left; }
+      .about-grid { grid-template-columns: 1fr; }
+      .edu-item { grid-template-columns: 1fr; gap: 0.3rem; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .project-card { border-right: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#hero" class="nav-name">Sofia Acosta</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div>
+    <p class="hero-eyebrow">Computer Vision · Neural Rendering · Deep Learning</p>
+    <h1 class="hero-name">Sofia<br><em>Acosta</em></h1>
+    <p class="hero-desc">
+      Erasmus Mundus IPCVai scholar rotating through Budapest, Madrid, and Bordeaux.
+      Background in biomedical engineering. Interested in 3D reconstruction,
+      vision-language models, and making things that see the world accurately.
+    </p>
+    <div class="hero-links">
+      <a href="assets/cv.pdf" class="btn btn-primary" target="_blank">
+        ↓ Download CV
+      </a>
+      <a href="https://github.com/sofiacostap" class="btn btn-outline" target="_blank">
+        GitHub
+      </a>
+      <a href="https://linkedin.com/in/[YOUR-LINKEDIN]" class="btn btn-outline" target="_blank">
+        LinkedIn
+      </a>
+    </div>
+  </div>
+  <div class="hero-meta">
+    <span class="hero-stat">
+      <strong>5<sup style="font-size:1rem">th</sup></strong>
+      IEEE ICIP 2026 Re-ID Challenge
+    </span>
+    <span class="hero-stat" style="margin-top:1.4rem">
+      <strong>+22 dB</strong>
+      PSNR gain, 3DGS vs NGP
+    </span>
+    <span class="hero-stat" style="margin-top:1.4rem">
+      <strong>3</strong>
+      European universities
+    </span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <p class="section-label">About</p>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        I am a master's student on the <strong>Erasmus Mundus IPCVai programme</strong>,
+        a competitive joint degree spanning Pázmány Péter Catholic University,
+        Universidad Autónoma de Madrid, and Université de Bordeaux.
+      </p>
+      <p>
+        My background is in <strong>biomedical engineering</strong> (Universidad de los Andes,
+        Colombia), which gives me an unusual angle on vision problems —
+        I care about measurement, uncertainty, and what a model is actually encoding,
+        not just whether its outputs look plausible.
+      </p>
+      <p>
+        My current work sits at the intersection of <strong>neural rendering</strong>,
+        <strong>3D reconstruction</strong>, and <strong>deep learning fairness</strong>.
+        I am looking for Computer Vision internships in Germany from early 2027.
+      </p>
+    </div>
+    <div class="about-facts">
+      <div class="fact-group">
+        <p class="fact-label">Currently</p>
+        <p class="fact-item">
+          Madrid, Spain<br>
+          Moving to Bordeaux, September 2026
+        </p>
+      </div>
+      <div class="fact-group">
+        <p class="fact-label">Research interests</p>
+        <p class="fact-item">
+          Novel View Synthesis · NeRF · 3D Gaussian Splatting<br>
+          Structure from Motion · Dense Reconstruction<br>
+          Vision-Language Models · Bias Auditing<br>
+          Biomedical Signal Processing
+        </p>
+      </div>
+      <div class="fact-group">
+        <p class="fact-label">Languages</p>
+        <p class="fact-item">
+          Spanish — native<br>
+          English — fluent (C1)<br>
+          German — beginner (A1–A2)
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <p class="section-label">Projects &amp; Research</p>
+  <h2>Selected work</h2>
+  <div class="projects-grid">
+
+    <!-- P1 -->
+    <a class="project-card" href="https://github.com/sofiacostap/nvs-3dgs-vs-ingp" target="_blank">
+      <span class="project-number">01 — TRDP · 2025–2026</span>
+      <h3 class="project-title">Novel View Synthesis:<br>3DGS vs. Instant-NGP</h3>
+      <p class="project-desc">
+        Systematic comparison of 3D Gaussian Splatting and Instant-NGP across
+        four scene types — including a 200° FOV fisheye capture —
+        inside the Nerfstudio framework.
+      </p>
+      <span class="project-result">+22 dB PSNR · 37–74 FPS vs 0.1 FPS</span>
+      <div class="project-tags">
+        <span class="tag">PyTorch</span>
+        <span class="tag">Nerfstudio</span>
+        <span class="tag">COLMAP</span>
+        <span class="tag">CUDA</span>
+      </div>
+      <span class="project-arrow">↗</span>
+    </a>
+
+    <!-- P2 -->
+    <a class="project-card" href="https://github.com/sofiacostap/urban-reid-icip2026" target="_blank">
+      <span class="project-number">02 — IEEE ICIP 2026 · Tampere</span>
+      <h3 class="project-title">Urban Re-ID Challenge</h3>
+      <p class="project-desc">
+        Cross-camera matching of urban infrastructure across a structural domain gap —
+        training on forward cameras, evaluation on a single backward camera
+        with no overlapping pairs.
+      </p>
+      <span class="project-result">🏆 5th place · mAP 0.175 · +71.7% over baseline</span>
+      <div class="project-tags">
+        <span class="tag">PyTorch</span>
+        <span class="tag">ViT-Large</span>
+        <span class="tag">DANN</span>
+        <span class="tag">Re-ID</span>
+      </div>
+      <span class="project-arrow">↗</span>
+    </a>
+
+    <!-- P3 -->
+    <a class="project-card" href="https://github.com/sofiacostap/vlm-gender-bias-audit" target="_blank">
+      <span class="project-number">03 — PPCU · 2025–2026</span>
+      <h3 class="project-title">Gender Bias Audit in Vision-Language Models</h3>
+      <p class="project-desc">
+        Logit-level audit of LLaVA-1.5-7B for binary gender bias toward
+        non-binary identities. Isolated the CLIP visual encoder as the
+        source of misgendering via text-only ablation.
+      </p>
+      <span class="project-result">Vocabulary collapse, not misclassification</span>
+      <div class="project-tags">
+        <span class="tag">LLaVA</span>
+        <span class="tag">CLIP</span>
+        <span class="tag">HuggingFace</span>
+        <span class="tag">UMAP</span>
+      </div>
+      <span class="project-arrow">↗</span>
+    </a>
+
+    <!-- P4 -->
+    <a class="project-card" href="https://github.com/sofiacostap/sfm-pipeline" target="_blank">
+      <span class="project-number">04 — UAM · 2026</span>
+      <h3 class="project-title">Structure from Motion Pipeline</h3>
+      <p class="project-desc">
+        Full multi-view 3D reconstruction from scratch: Zhang calibration,
+        SURF matching, RANSAC, projective bundle adjustment,
+        Euclidean resectioning.
+      </p>
+      <span class="project-result">1.09 px reprojection error · 3,683 tracks</span>
+      <div class="project-tags">
+        <span class="tag gray">MATLAB</span>
+        <span class="tag gray">SfM</span>
+        <span class="tag gray">RANSAC</span>
+      </div>
+      <span class="project-arrow">↗</span>
+    </a>
+
+    <!-- P5 placeholder -->
+    <a class="project-card" href="#" style="opacity:0.5; cursor:default;">
+      <span class="project-number">05 — PPCU · 2025–2026</span>
+      <h3 class="project-title">Biomedical Signal Processing</h3>
+      <p class="project-desc">
+        Coming soon.
+      </p>
+      <div class="project-tags">
+        <span class="tag gray">Signal Processing</span>
+      </div>
+      <span class="project-arrow">↗</span>
+    </a>
+
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <p class="section-label">Education</p>
+  <h2>Academic background</h2>
+  <div class="edu-list">
+    <div class="edu-item">
+      <div class="edu-dates">2025<br>→ 2027</div>
+      <div>
+        <p class="edu-degree">M.Sc. Image Processing &amp; Computer Vision</p>
+        <p class="edu-school">
+          Erasmus Mundus IPCVai — PPCU (Budapest) · UAM (Madrid) · Université de Bordeaux
+        </p>
+        <p class="edu-detail">
+          Coursework: Deep Learning, 3D Vision, Biomedical Signal Processing,
+          Multimodal Sensor Fusion, HPC for Deep Learning
+        </p>
+      </div>
+    </div>
+    <div class="edu-item">
+      <div class="edu-dates">2020<br>→ 2024</div>
+      <div>
+        <p class="edu-degree">B.Sc. Biomedical Engineering</p>
+        <p class="edu-school">Universidad de los Andes — Bogotá, Colombia</p>
+        <p class="edu-detail">GPA 4.05 / 5.0</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <p class="section-label">Skills</p>
+  <div class="skills-grid">
+    <div class="skill-group">
+      <p class="skill-group-label">Programming</p>
+      <ul class="skill-list">
+        <li>Python</li>
+        <li>MATLAB</li>
+        <li>C++ (basic)</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <p class="skill-group-label">DL &amp; CV</p>
+      <ul class="skill-list">
+        <li>PyTorch</li>
+        <li>OpenCV</li>
+        <li>HuggingFace</li>
+        <li>TensorFlow (basic)</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <p class="skill-group-label">3D Vision</p>
+      <ul class="skill-list">
+        <li>Nerfstudio</li>
+        <li>gsplat</li>
+        <li>COLMAP</li>
+      </ul>
+    </div>
+    <div class="skill-group">
+      <p class="skill-group-label">Tools</p>
+      <ul class="skill-list">
+        <li>Git · Linux · CUDA</li>
+        <li>Docker (basic)</li>
+        <li>NumPy · pandas</li>
+        <li>scikit-learn · UMAP</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label">Contact</p>
+  <h2>Let's talk</h2>
+  <p class="subtitle">
+    I am looking for Computer Vision internships in Germany from early 2027.
+    If my work looks relevant to your team, feel free to reach out.
+  </p>
+  <div class="contact-links">
+    <a href="mailto:sofiape0608@gmail.com" class="btn btn-primary">
+      ✉ sofiape0608@gmail.com
+    </a>
+    <a href="https://github.com/sofiacostap" class="btn btn-outline" target="_blank">
+      GitHub
+    </a>
+    <a href="https://linkedin.com/in/[YOUR-LINKEDIN]" class="btn btn-outline" target="_blank">
+      LinkedIn
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>Sofia Acosta · Computer Vision · 2026</p>
+  <p>sofiacostap.github.io</p>
+</footer>
+
+</body>
+</html>
